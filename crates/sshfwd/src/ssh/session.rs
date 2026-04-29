@@ -228,9 +228,10 @@ async fn authenticate(
     // 1. Try ssh-agent
     if let Ok(mut agent) = russh::keys::agent::client::AgentClient::connect_env().await {
         if let Ok(identities) = agent.request_identities().await {
-            for key in identities {
+            for identity in identities {
+                let pubkey = identity.public_key().into_owned();
                 match handle
-                    .authenticate_publickey_with(user, key, rsa_hash, &mut agent)
+                    .authenticate_publickey_with(user, pubkey, rsa_hash, &mut agent)
                     .await
                 {
                     Ok(res) if res.success() => return Ok(true),
